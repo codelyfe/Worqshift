@@ -3,7 +3,9 @@
 Plugin Name: Worqshift
 Description: PHP Error Handling Plugin for WordPress
 Version: 1.4
-Author: codelyfe.github.io
+Author: codelyfe
+Author URI: https://codelyfe.github.io
+License: GPLv3 or later
 */
 
 function get_server_disk_info() {
