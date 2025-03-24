@@ -259,8 +259,14 @@ add_action('wp_dashboard_setup', function() {
 
         if ($count > 0) {
             echo "<div style='padding:10px; background-color:#f8d7da; color:#721c24; border-left:5px solid #f5c6cb; margin-bottom:10px;'>
-                    <strong>⚠️ $count PHP Errors Found</strong>
-                  </div>";
+                    <strong>⚠️ $count PHP Errors Found</strong>";
+            echo "</div>";
+            echo "<b class='text-muted fs-6'>";
+            echo 'PHP: ' . phpversion() . ' | ';
+            echo 'WP: ' . get_bloginfo('version') . ' | ';
+            global $wpdb;
+            echo 'MySQL: ' . $wpdb->db_version() . '';
+            echo "</b><br/><br/>";
         } else {
             echo "<p>No PHP errors found.</p>";
         }
