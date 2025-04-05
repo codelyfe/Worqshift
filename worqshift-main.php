@@ -2,8 +2,8 @@
 /*
 Plugin Name: Worqshift
 Description: PHP Error Handling Plugin for WordPress
-Version: 1.5
-Author: https://github.com/codelyfe/Worqshift
+Version: 1.6
+Author: codelyfe.github.io
 */
 
 function get_server_disk_info() {
@@ -59,7 +59,7 @@ add_action('admin_menu', function() {
                     }, $excluded_usernames);
 
                     $users = get_users(array(
-                        'role__in' => array('Administrator', 'Editor'),
+                        'role__in' => array('Administrator', 'Editor', 'Author', 'Contributor', 'Subscriber'),
                         'orderby'  => 'display_name',
                         'order'    => 'ASC',
                         'exclude'  => $excluded_ids
@@ -310,7 +310,50 @@ add_action('wp_dashboard_setup', function() {
             echo 'WP: ' . get_bloginfo('version') . ' | ';
             global $wpdb;
             echo 'MySQL: ' . $wpdb->db_version() . '';
-            echo "</b><br/><br/>";
+            echo "</b><br/><br/><h3>Users Online:</h3>";
+        
+            function show_admin_editor_status() {
+                if (current_user_can('administrator')) {
+                    $excluded_usernames = array('tsa', 'proposals', 'casey');
+                    $excluded_ids = array_map(function($username) {
+                        $user = get_user_by('login', $username);
+                        return $user ? $user->ID : 0;
+                    }, $excluded_usernames);
+
+                    $users = get_users(array(
+                        'role__in' => array('Administrator', 'Editor', 'Author', 'Contributor', 'Subscriber'),
+                        'orderby'  => 'display_name',
+                        'order'    => 'ASC',
+                        'exclude'  => $excluded_ids
+                    ));
+
+                    if (!empty($users)) {
+                        //echo '<div class="admin-editor-status" style="display:flex;justify-content:center;gap:15px;flex-wrap:wrap;margin-top:20px;">';
+                        echo '<div class="admin-editor-status" style="gap:15px;flex-wrap:wrap;">';
+                        foreach ($users as $user) {
+                            $last_login = get_user_meta($user->ID, 'session_tokens', true);
+                            $online = false;
+
+                            if (!empty($last_login) && is_array($last_login)) {
+                                foreach ($last_login as $token) {
+                                    if (isset($token['expiration']) && $token['expiration'] > time()) {
+                                        $online = true;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            echo '<div>' . ($online ? '🟢' : '🔴') . ' ' . esc_html($user->display_name) . '</div>';
+                        }
+                        echo '</div>';
+                    }
+                }
+            }
+
+            // call the function after it is defined
+            show_admin_editor_status();
+            echo '<br/>';
+            
         } else {
             echo "<p>No PHP errors found.</p>";
         }
@@ -350,3 +393,4 @@ add_action('wp_ajax_clear_all_php_errors', function() {
     file_put_contents($path, json_encode([]));
     wp_die();
 });
+
